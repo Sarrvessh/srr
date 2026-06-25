@@ -156,3 +156,113 @@ impl Autocomplete {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_apply_trigger_only() {
+        let ac = Autocomplete {
+            active: true,
+            trigger: '/',
+            query: String::new(),
+            results: vec!["/help  — Show this help screen".to_string()],
+            selected: 0,
+            cursor_pos: 0,
+            file_cache: Vec::new(),
+            file_cache_updated: Instant::now(),
+        };
+        assert_eq!(ac.apply("/"), "/help ");
+    }
+
+    #[test]
+    fn test_apply_partial_query() {
+        let ac = Autocomplete {
+            active: true,
+            trigger: '/',
+            query: "h".to_string(),
+            results: vec!["/help  — Show this help screen".to_string()],
+            selected: 0,
+            cursor_pos: 0,
+            file_cache: Vec::new(),
+            file_cache_updated: Instant::now(),
+        };
+        assert_eq!(ac.apply("/h"), "/help ");
+    }
+
+    #[test]
+    fn test_apply_full_query() {
+        let ac = Autocomplete {
+            active: true,
+            trigger: '/',
+            query: "help".to_string(),
+            results: vec!["/help  — Show this help screen".to_string()],
+            selected: 0,
+            cursor_pos: 0,
+            file_cache: Vec::new(),
+            file_cache_updated: Instant::now(),
+        };
+        assert_eq!(ac.apply("/help"), "/help ");
+    }
+
+    #[test]
+    fn test_apply_empty_results() {
+        let ac = Autocomplete {
+            active: true,
+            trigger: '/',
+            query: "xyz".to_string(),
+            results: vec![],
+            selected: 0,
+            cursor_pos: 0,
+            file_cache: Vec::new(),
+            file_cache_updated: Instant::now(),
+        };
+        assert_eq!(ac.apply("/xyz"), "/xyz");
+    }
+
+    #[test]
+    fn test_apply_mid_input() {
+        let ac = Autocomplete {
+            active: true,
+            trigger: '/',
+            query: "h".to_string(),
+            results: vec!["/help  — Show this help screen".to_string()],
+            selected: 0,
+            cursor_pos: 4,
+            file_cache: Vec::new(),
+            file_cache_updated: Instant::now(),
+        };
+        assert_eq!(ac.apply("say /h"), "say /help ");
+    }
+
+    #[test]
+    fn test_selected_value_commands() {
+        let ac = Autocomplete {
+            active: true,
+            trigger: '/',
+            query: String::new(),
+            results: vec!["/help  — Show this help screen".to_string()],
+            selected: 0,
+            cursor_pos: 0,
+            file_cache: Vec::new(),
+            file_cache_updated: Instant::now(),
+        };
+        assert_eq!(ac.selected_value(), Some("/help".to_string()));
+    }
+
+    #[test]
+    fn test_selected_value_files() {
+        let ac = Autocomplete {
+            active: true,
+            trigger: '@',
+            query: "sr".to_string(),
+            results: vec!["src/main.rs".to_string()],
+            selected: 0,
+            cursor_pos: 0,
+            file_cache: Vec::new(),
+            file_cache_updated: Instant::now(),
+        };
+        assert_eq!(ac.selected_value(), Some("src/main.rs".to_string()));
+    }
+}

@@ -649,3 +649,237 @@ fn extract_generic(content: &str, path: &Path) -> Vec<Symbol> {
     }
     symbols
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::Path;
+
+    fn test_path(name: &str) -> &Path {
+        Path::new(name)
+    }
+
+    #[test]
+    fn test_extract_python_ts_functions() {
+        let code = r#"
+def hello(name):
+    print(f"Hi {name}")
+
+def add(a, b):
+    return a + b
+
+async def fetch_data():
+    return "data"
+"#;
+        let symbols = extract_python(code, test_path("test.py"));
+        let names: Vec<&str> = symbols.iter().map(|s| s.name.as_str()).collect();
+        assert!(names.contains(&"hello"), "should find hello");
+        assert!(names.contains(&"add"), "should find add");
+        assert!(names.contains(&"fetch_data"), "should find async function");
+        assert_eq!(symbols.iter().filter(|s| s.kind == SymbolKind::Function).count(), 3);
+    }
+
+    #[test]
+    fn test_extract_python_ts_classes() {
+        let code = r#"
+class Greeter:
+    def greet(self, name):
+        print(f"Hello {name}")
+
+class Calculator:
+    def add(self, a, b):
+        return a + b
+"#;
+        let symbols = extract_python(code, test_path("test.py"));
+        let names: Vec<&str> = symbols.iter().map(|s| s.name.as_str()).collect();
+        assert!(names.contains(&"Greeter"), "should find Greeter class");
+        assert!(names.contains(&"Calculator"), "should find Calculator class");
+        assert!(names.contains(&"greet"), "should find greet method");
+        assert!(names.contains(&"add"), "should find add method");
+    }
+
+    #[test]
+    fn test_extract_python_ts_decorated() {
+        let code = r#"
+@app.route("/")
+def index():
+    return "Hello"
+
+@cache
+@logged
+def expensive_op(n):
+    return n * n
+"#;
+        let symbols = extract_python(code, test_path("test.py"));
+        let names: Vec<&str> = symbols.iter().map(|s| s.name.as_str()).collect();
+        assert!(names.contains(&"index"), "should find decorated function");
+        assert!(names.contains(&"expensive_op"), "should find multi-decorated function");
+    }
+
+    #[test]
+    fn test_extract_javascript_ts_functions() {
+        let code = r#"
+function hello(name) {
+    return `Hi ${name}`;
+}
+
+async function fetchData(url) {
+    const resp = await fetch(url);
+    return resp.json();
+}
+
+const greet = (name) => `Hello ${name}`;
+
+export function exportedFn() {
+    return 42;
+}
+"#;
+        let symbols = extract_js(code, test_path("test.js"));
+        let names: Vec<&str> = symbols.iter().map(|s| s.name.as_str()).collect();
+        assert!(names.contains(&"hello"), "should find hello function");
+        assert!(names.contains(&"fetchData"), "should find async function");
+        assert!(names.contains(&"exportedFn"), "should find exported function");
+    }
+
+    #[test]
+    fn test_extract_javascript_ts_classes() {
+        let code = r#"
+class Greeter {
+    constructor(name) {
+        this.name = name;
+    }
+
+    greet() {
+        return `Hello ${this.name}`;
+    }
+}
+
+class Calculator {
+    add(a, b) {
+        return a + b;
+    }
+}
+"#;
+        let symbols = extract_js(code, test_path("test.js"));
+        let names: Vec<&str> = symbols.iter().map(|s| s.name.as_str()).collect();
+        assert!(names.contains(&"Greeter"), "should find Greeter class");
+        assert!(names.contains(&"Calculator"), "should find Calculator class");
+    }
+
+    #[test]
+    fn test_extract_javascript_ts_variables() {
+        let code = r#"
+const PI = 3.14159;
+let counter = 0;
+var old_style = "hello";
+"#;
+        let symbols = extract_js(code, test_path("test.js"));
+        let names: Vec<&str> = symbols.iter().map(|s| s.name.as_str()).collect();
+        assert!(names.contains(&"PI"), "should find const");
+        assert!(names.contains(&"counter"), "should find let");
+        assert!(names.contains(&"old_style"), "should find var");
+    }
+
+    #[test]
+    fn test_extract_go_ts_functions() {
+        let code = r#"
+package main
+
+func hello(name string) string {
+    return fmt.Sprintf("Hi %s", name)
+}
+
+func add(a, b int) int {
+    return a + b
+}
+"#;
+        let symbols = extract_go(code, test_path("test.go"));
+        let names: Vec<&str> = symbols.iter().map(|s| s.name.as_str()).collect();
+        assert!(names.contains(&"hello"), "should find hello function");
+        assert!(names.contains(&"add"), "should find add function");
+    }
+
+    #[test]
+    fn test_extract_go_ts_methods_and_types() {
+        let code = r#"
+type Greeter struct {
+    Name string
+}
+
+func (g *Greeter) Greet() string {
+    return "Hello " + g.Name
+}
+
+type Calculator interface {
+    Add(a, b int) int
+}
+"#;
+        let symbols = extract_go(code, test_path("test.go"));
+        let names: Vec<&str> = symbols.iter().map(|s| s.name.as_str()).collect();
+        assert!(names.contains(&"Greeter"), "should find Greeter struct");
+        assert!(names.contains(&"Greet"), "should find Greet method");
+        assert!(names.contains(&"Calculator"), "should find Calculator interface");
+    }
+
+    #[test]
+    fn test_extract_rust_ts() {
+        let code = r#"
+fn hello() -> String {
+    "hello".to_string()
+}
+
+struct Person {
+    name: String,
+}
+
+enum Status {
+    Active,
+    Inactive,
+}
+
+trait Runner {
+    fn run(&self);
+}
+
+impl Runner for Person {
+    fn run(&self) {
+        println!("running");
+    }
+}
+"#;
+        let symbols = extract_rust(code, test_path("test.rs"));
+        let names: Vec<&str> = symbols.iter().map(|s| s.name.as_str()).collect();
+        assert!(names.contains(&"hello"), "should find function");
+        assert!(names.contains(&"Person"), "should find struct");
+        assert!(names.contains(&"Status"), "should find enum");
+        assert!(names.contains(&"Runner"), "should find trait");
+    }
+
+    #[test]
+    fn test_extract_python_fallback() {
+        // Test with code that has incorrect syntax — should fall back to regex
+        let code = r#"
+def valid_fn(x):
+    return x
+"#;
+        let symbols = extract_python(code, test_path("test.py"));
+        assert!(!symbols.is_empty(), "fallback regex should still find symbols");
+    }
+
+    #[test]
+    fn test_extract_generic() {
+        let code = r#"
+fn do_something() {
+    // ...
+}
+
+struct MyStruct {
+    field: i32,
+}
+"#;
+        let symbols = extract_generic(code, test_path("test.unknown"));
+        let names: Vec<&str> = symbols.iter().map(|s| s.name.as_str()).collect();
+        assert!(names.contains(&"do_something"), "generic should find function");
+        assert!(names.contains(&"MyStruct"), "generic should find struct");
+    }
+}
