@@ -1,0 +1,10 @@
+2024-01-01 10:00:00 ERROR Database timeout: connection pool exhausted from 192.168.1.100
+2024-01-01 10:00:01 ERROR Database timeout: connection pool exhausted from 192.168.1.101
+2024-01-01 10:00:02 ERROR Redis disconnect: connection refused on port 6379
+2024-01-01 10:00:03 ERROR Authentication error: invalid token for user 42
+2024-01-01 10:00:04 ERROR Database timeout: connection pool exhausted from 192.168.1.102
+2024-01-01 10:00:05 ERROR Redis disconnect: connection refused on port 6379
+2024-01-01 10:00:06 ERROR Authentication error: invalid token for user 43
+2024-01-01 10:00:07 ERROR Database timeout: connection pool exhausted from 192.168.1.103
+2024-01-01 10:00:08 ERROR Redis disconnect: connection refused on port 6379
+2024-01-01 10:00:09 ERROR Authentication error: invalid token for user 44

@@ -1,0 +1,15 @@
+2024-01-01 10:00:00 INFO Application starting
+2024-01-01 10:00:01 INFO Database connected
+2024-01-01 10:00:02 WARN Rate limit approaching for 192.168.1.1
+2024-01-01 10:00:03 ERROR Database timeout: connection pool exhausted
+2024-01-01 10:00:04 ERROR Database timeout: connection pool exhausted
+2024-01-01 10:00:05 ERROR Redis disconnect: connection refused
+2024-01-01 10:00:06 INFO Request GET /api/users completed in 45ms
+2024-01-01 10:00:07 WARN High memory usage: 85%
+2024-01-01 10:00:08 ERROR Database timeout: connection pool exhausted
+2024-01-01 10:00:09 ERROR Authentication failed for user: unknown_user
+2024-01-01 10:00:10 INFO Request POST /api/users completed in 120ms
+2024-01-01 10:00:11 ERROR Database timeout: connection pool exhausted
+2024-01-01 10:00:12 ERROR Redis disconnect: connection refused
+2024-01-01 10:00:13 ERROR Authentication failed for user: test_user
+2024-01-01 10:00:14 INFO Server shutdown complete

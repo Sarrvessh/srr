@@ -1,0 +1,11 @@
+[server]
+host = "127.0.0.1"
+port = 8080
+
+[database]
+url = "postgresql://localhost:5432/sample"
+max_connections = 10
+
+[auth]
+jwt_secret = "change-me-in-production"
+token_expiry_hours = 24

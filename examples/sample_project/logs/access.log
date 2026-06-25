@@ -1,0 +1,8 @@
+192.168.1.1 GET /api/users 200 45ms
+192.168.1.2 POST /api/users 201 120ms
+192.168.1.3 GET /api/users/42 200 12ms
+192.168.1.4 PUT /api/users/42 200 30ms
+192.168.1.5 DELETE /api/users/42 204 15ms
+192.168.1.6 GET /api/users 200 8ms
+192.168.1.7 POST /api/auth/login 200 55ms
+192.168.1.8 POST /api/auth/refresh 200 22ms

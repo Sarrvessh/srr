@@ -1,0 +1,14 @@
+{
+  "name": "catppuccin-macchiato",
+  "user": "#8aadf4",
+  "assistant": "#a6da95",
+  "tool_call": "#c6a0f6",
+  "tool_result": "#5b6078",
+  "error": "#ed8796",
+  "success": "#a6da95",
+  "status": "#5b6078",
+  "border": "#494d64",
+  "input_bg": "#1e2030",
+  "conversation_bg": "#24273a",
+  "accent": "#f5a97f"
+}

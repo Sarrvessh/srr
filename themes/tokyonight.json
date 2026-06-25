@@ -1,0 +1,14 @@
+{
+  "name": "tokyonight",
+  "user": "#7aa2f7",
+  "assistant": "#9ece6a",
+  "tool_call": "#bb9af7",
+  "tool_result": "#565f89",
+  "error": "#f7768e",
+  "success": "#9ece6a",
+  "status": "#565f89",
+  "border": "#3b4261",
+  "input_bg": "#1a1b26",
+  "conversation_bg": "#24283b",
+  "accent": "#f7768e"
+}

@@ -1,0 +1,14 @@
+{
+  "name": "gruvbox-dark",
+  "user": "#83a598",
+  "assistant": "#b8bb26",
+  "tool_call": "#d3869b",
+  "tool_result": "#504945",
+  "error": "#fb4934",
+  "success": "#b8bb26",
+  "status": "#504945",
+  "border": "#665c54",
+  "input_bg": "#1d2021",
+  "conversation_bg": "#282828",
+  "accent": "#fe8019"
+}
