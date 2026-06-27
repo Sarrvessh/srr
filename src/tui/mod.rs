@@ -35,6 +35,7 @@ const POLL_MS: u64 = 100;
 const STREAM_POLL_MS: u64 = 16;
 const MAX_TOOL_ROUNDS: usize = 5;
 const MAX_MESSAGES: usize = 200;
+const COMPACT_THRESHOLD: usize = 75_000;
 
 enum AppState {
     Idle,
@@ -78,6 +79,7 @@ struct App {
     tool_round: usize,
     quit_pending: bool,
     quit_pending_at: Instant,
+    compacted: bool,
 }
 
 impl App {
@@ -110,6 +112,7 @@ impl App {
             tool_round: 0,
             quit_pending: false,
             quit_pending_at: Instant::now(),
+            compacted: false,
         }
     }
 
@@ -119,6 +122,28 @@ impl App {
             self.messages.remove(0);
         }
         self.runtime.add_to_session(role, &content, Vec::new());
+    }
+
+    fn estimated_tokens(&self) -> usize {
+        self.messages.iter().map(|m| m.content.len()).sum::<usize>() / 4
+    }
+
+    fn maybe_compact(&mut self) {
+        if self.compacted {
+            return;
+        }
+        if self.estimated_tokens() < COMPACT_THRESHOLD || self.messages.len() < 5 {
+            return;
+        }
+        let keep = self.messages.split_off(self.messages.len().saturating_sub(10));
+        self.messages = keep;
+        self.messages.insert(0, ChatMessage {
+            role: "system".to_string(),
+            content: "Conversation compacted. Earlier messages removed.".to_string(),
+        });
+        self.scroll = 0;
+        self.compacted = true;
+        self.status = "Conversation auto-compacted".to_string();
     }
 
     fn cycle_mode(&mut self) {
@@ -162,7 +187,7 @@ impl App {
             if let Some(response) = result {
                 match response.as_str() {
                     "__help__" => { self.show_help = true; return; }
-                    "__clear__" => { self.messages.clear(); self.scroll = 0; self.instant_tool_results.clear(); self.parsed_tool_calls.clear(); self.pending_approvals.clear(); self.selected_approval = 0; self.pending_response_text.clear(); self.auto_scroll = true; return; }
+                    "__clear__" => { self.messages.clear(); self.scroll = 0; self.instant_tool_results.clear(); self.parsed_tool_calls.clear(); self.pending_approvals.clear(); self.selected_approval = 0; self.pending_response_text.clear(); self.auto_scroll = true; self.compacted = false; return; }
                     "__compact__" => {
                         if self.messages.len() > 10 {
                             let keep = self.messages.split_off(self.messages.len().saturating_sub(10));
@@ -170,6 +195,7 @@ impl App {
                             self.messages.insert(0, ChatMessage { role: "system".to_string(), content: "Conversation compacted. Earlier messages removed.".to_string() });
                             self.scroll = 0;
                         }
+                        self.compacted = false;
                         return;
                     }
                     "__exit__" => { self.running = false; return; }
@@ -650,6 +676,7 @@ impl App {
                         }
                         self.add_msg("assistant", response_text.clone());
                         self.handle_stream_completion(response_text);
+                        self.maybe_compact();
                     }
                 }
             }
@@ -670,6 +697,7 @@ impl App {
                         }
                         self.add_msg("assistant", text.clone());
                         self.handle_stream_completion(text);
+                        self.maybe_compact();
                     }
                 }
             }
