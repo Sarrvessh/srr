@@ -80,6 +80,8 @@ struct App {
     quit_pending: bool,
     quit_pending_at: Instant,
     compacted: bool,
+    session_input_tokens: usize,
+    session_output_tokens: usize,
 }
 
 impl App {
@@ -113,10 +115,18 @@ impl App {
             quit_pending: false,
             quit_pending_at: Instant::now(),
             compacted: false,
+            session_input_tokens: 0,
+            session_output_tokens: 0,
         }
     }
 
     fn add_msg(&mut self, role: &str, content: String) {
+        let tokens = content.len() / 4 + 1;
+        match role {
+            "user" | "system" => self.session_input_tokens += tokens,
+            "assistant" | "tool_result" => self.session_output_tokens += tokens,
+            _ => {}
+        }
         self.messages.push(ChatMessage { role: role.to_string(), content: content.clone() });
         while self.messages.len() > MAX_MESSAGES {
             self.messages.remove(0);
@@ -187,7 +197,7 @@ impl App {
             if let Some(response) = result {
                 match response.as_str() {
                     "__help__" => { self.show_help = true; return; }
-                    "__clear__" => { self.messages.clear(); self.scroll = 0; self.instant_tool_results.clear(); self.parsed_tool_calls.clear(); self.pending_approvals.clear(); self.selected_approval = 0; self.pending_response_text.clear(); self.auto_scroll = true; self.compacted = false; return; }
+                    "__clear__" => { self.messages.clear(); self.scroll = 0; self.instant_tool_results.clear(); self.parsed_tool_calls.clear(); self.pending_approvals.clear(); self.selected_approval = 0; self.pending_response_text.clear(); self.auto_scroll = true; self.compacted = false; self.session_input_tokens = 0; self.session_output_tokens = 0; return; }
                     "__compact__" => {
                         if self.messages.len() > 10 {
                             let keep = self.messages.split_off(self.messages.len().saturating_sub(10));
@@ -794,10 +804,8 @@ fn render(f: &mut Frame, app: &mut App) {
     let model_for_bar = app.model.clone();
     let mode_str = app.mode.as_str();
 
-    let total_chars: usize = app.messages.iter().map(|m| m.content.len()).sum();
-    let est_tokens = total_chars / 4;
-    let context_pct = ((est_tokens as f64 / 100_000.0) * 100.0) as usize;
-    title::render(f, chunks[0], &app.theme, &model_for_bar, mode_str, context_pct.min(100));
+    let context_pct = ((app.session_input_tokens + app.session_output_tokens) as f64 / 100_000.0 * 100.0) as usize;
+    title::render(f, chunks[0], &app.theme, &model_for_bar, mode_str, context_pct.min(100), (app.session_input_tokens, app.session_output_tokens));
 
     if app.show_help {
         help::render(f, chunks[1], &app.theme);
@@ -824,5 +832,5 @@ fn render(f: &mut Frame, app: &mut App) {
     let input_text = app.input.clone();
     let cursor_pos = app.cursor;
     input::render(f, chunks[2], &app.theme, &input_text, cursor_pos, &app.autocomplete);
-    status::render(f, chunks[3], &app.theme, mode_str, &model_for_bar, &app.status, est_tokens);
+    status::render(f, chunks[3], &app.theme, mode_str, &model_for_bar, &app.status, app.session_input_tokens + app.session_output_tokens);
 }

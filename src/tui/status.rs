@@ -10,7 +10,7 @@ use ratatui::{
 
 use crate::theme::Theme;
 
-pub fn render(f: &mut Frame, area: Rect, theme: &Theme, mode: &str, model: &str, status: &str, _token_count: usize) {
+pub fn render(f: &mut Frame, area: Rect, theme: &Theme, mode: &str, model: &str, status: &str, total_tokens: usize) {
     let dim = theme.fg("status");
     let now = Local::now();
     let time_str = now.format("%H:%M").to_string();
@@ -34,13 +34,17 @@ pub fn render(f: &mut Frame, area: Rect, theme: &Theme, mode: &str, model: &str,
         _ => dim,
     };
 
+    let tokens_str = format!("{}t", total_tokens);
+
     let line = Line::from(vec![
         Span::styled(badge, Style::default().fg(badge_color).bold().bg(dim)),
         Span::styled("  ", Style::default().fg(dim)),
         Span::styled(model_display, Style::default().fg(dim)),
         Span::styled("  |  ", Style::default().fg(dim)),
         Span::styled(status, Style::default().fg(status_color)),
-        Span::styled("  ", Style::default().fg(dim)),
+        Span::styled("  \u{2022}  ", Style::default().fg(dim)),
+        Span::styled(tokens_str, Style::default().fg(dim)),
+        Span::styled("  \u{2022}  ", Style::default().fg(dim)),
         Span::styled(time_str, Style::default().fg(dim)),
     ]);
     f.render_widget(Paragraph::new(line), area);

@@ -8,7 +8,8 @@ use ratatui::{
 
 use crate::theme::Theme;
 
-pub fn render(f: &mut Frame, area: Rect, theme: &Theme, model: &str, mode: &str, context_pct: usize) {
+pub fn render(f: &mut Frame, area: Rect, theme: &Theme, model: &str, mode: &str, context_pct: usize, tokens: (usize, usize)) {
+    let (input_tokens, output_tokens) = tokens;
     let accent = theme.fg("accent");
     let dim = theme.fg("status");
     let model_display = if model.is_empty() { "no model" } else { model };
@@ -27,6 +28,8 @@ pub fn render(f: &mut Frame, area: Rect, theme: &Theme, model: &str, mode: &str,
         _ => " \u{2728} ",
     };
 
+    let tokens_str = format!("I:{} O:{}", input_tokens, output_tokens);
+
     let line = Line::from(vec![
         Span::styled(mode_icon, Style::default().fg(accent).bold()),
         Span::styled("SRR", Style::default().fg(accent).bold()),
@@ -34,6 +37,8 @@ pub fn render(f: &mut Frame, area: Rect, theme: &Theme, model: &str, mode: &str,
         Span::styled(model_display, Style::default().fg(dim)),
         Span::styled("  ·  ", Style::default().fg(dim)),
         Span::styled(ctx_str, Style::default().fg(ctx_color)),
+        Span::styled("  ·  ", Style::default().fg(dim)),
+        Span::styled(tokens_str, Style::default().fg(dim)),
     ]);
     f.render_widget(Paragraph::new(line), area);
 }
